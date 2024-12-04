@@ -1,0 +1,17 @@
+'''一般文件打开格式如下：
+-----BEGIN PUBLIC KEY-----
+一堆字符串
+-----END PUBLIC KEY-----'''
+使用脚本
+from Crypto.PublicKey import RSA#提取n和e
+
+with open("./key.pub", "rb") as file:#文件放到代码同一个文件夹
+    key = file.read()
+
+print(key)
+pub = RSA.importKey(key)
+n = pub.n
+e = pub.e
+print("n = ", n)
+print("e = ", e)
+#或者网站：http://tool.chacuo.net/cryptrsamodulus2pkey

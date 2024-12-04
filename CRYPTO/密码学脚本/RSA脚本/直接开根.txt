@@ -1,0 +1,15 @@
+n= 462529889120052440403021510418786834300182032766298436057921
+c= 103512870728628222374735494425739321040848074590916548316649
+e=75
+from Crypto.Util.number import long_to_bytes
+
+a = int(Zmod(n)(c).nth_root(e))
+b = int(Zmod(n)(1).nth_root(e))
+
+from tqdm import tqdm 
+for i in tqdm(range(e)):
+    a = (a*b)%n
+    m = long_to_bytes(int(a))
+    if b'flag' in m:
+        print(m)
+        break

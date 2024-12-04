@@ -1,0 +1,13 @@
+c = 0x6cd55a2bbb49dfd2831e34b76cb5bdfad34418a4be96180b618581e9b6319f86
+n = 108539847268573990275234024354672437246525085076605516960320005722741589898641
+e = 65537
+q = 333360321402603178263879595968004169219
+p = 325593180411801742356727264127253758939
+
+import libnum
+from Crypto.Util.number import long_to_bytes 
+ 
+d = libnum.invmod(e, (p - 1) * (q - 1))
+m = pow(c, d, n)   # m 的十进制形式
+string = long_to_bytes(m)  # m明文
+print(string)  # 结果为 b‘ m ’ 的形式

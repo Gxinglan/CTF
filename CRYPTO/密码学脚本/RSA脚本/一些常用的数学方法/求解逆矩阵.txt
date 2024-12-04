@@ -1,0 +1,9 @@
+#ZZ：整数环
+#QQ：有理数环
+#Zmod(p)：p为素数，定义在Z p上
+
+mt = matrix(QQ, 3, 2, [1, 2, 3, 4, 5, 6])
+#求矩阵X满足XA=B
+X = A.solve_left(B)
+#求矩阵X满足AX=B
+X = A.solve_right(B)

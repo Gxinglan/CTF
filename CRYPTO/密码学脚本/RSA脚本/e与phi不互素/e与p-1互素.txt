@@ -1,0 +1,118 @@
+#一、此推论满足的前提是------在c不是p或q的倍数，以及d是正整数的情况下，m = c ^ d modp 和m = c ^ d modq #总是成立的
+from Crypto.Util.number import *
+import gmpy2
+
+p= 12408795636519868275579286477747181009018504169827579387457997229774738126230652970860811085539129972962189443268046963335610845404214331426857155412988073
+q= 12190036856294802286447270376342375357864587534233715766210874702670724440751066267168907565322961270655972226761426182258587581206888580394726683112820379
+c= 68960610962019321576894097705679955071402844421318149418040507036722717269530195000135979777852568744281930839319120003106023209276898286482202725287026853925179071583797231099755287410760748104635674307266042492611618076506037004587354018148812584502385622631122387857218023049204722123597067641896169655595
+e=65537
+n = p * q
+phi = (p-1)
+print(gmpy2.gcd(e,phi))
+d = gmpy2.invert(e,phi)
+m = pow(c,d,p)
+print(long_to_bytes(m))
+
+#二、AMM算法
+# sage:
+import random
+import time
+from tqdm import tqdm
+from Crypto.Util.number import *
+# About 3 seconds to run
+def AMM(o, r, q):
+    start = time.time()
+    print('\n----------------------------------------------------------------------------------')
+    print('Start to run Adleman-Manders-Miller Root Extraction Method')
+    print('Try to find one {:#x}th root of {} modulo {}'.format(r, o, q))
+    g = GF(q)
+    o = g(o)
+    p = g(random.randint(1, q))
+    while p ^ ((q-1) // r) == 1:
+        p = g(random.randint(1, q))
+    print('[+] Find p:{}'.format(p))
+    t = 0
+    s = q - 1
+    while s % r == 0:
+        t += 1
+        s = s // r
+    print('[+] Find s:{}, t:{}'.format(s, t))
+    k = 1
+    while (k * s + 1) % r != 0:
+        k += 1
+    alp = (k * s + 1) // r
+    print('[+] Find alp:{}'.format(alp))
+    a = p ^ (r**(t-1) * s)
+    b = o ^ (r*alp - 1)
+    c = p ^ s
+    h = 1
+    for i in range(1, t):
+        d = b ^ (r^(t-1-i))
+        if d == 1:
+            j = 0
+        else:
+            print('[+] Calculating DLP...')
+            j = - discrete_log(d, a)
+            print('[+] Finish DLP...')
+        b = b * (c^r)^j
+        h = h * c^j
+        c = c^r
+    result = o^alp * h
+    end = time.time()
+    print("Finished in {} seconds.".format(end - start))
+    print('Find one solution: {}'.format(result))
+    return result
+
+def onemod(p,r): 
+    t=random.randint(2,p)
+    while pow(t,(p-1)//r,p)==1: 
+         t=random.randint(2,p)
+    return pow(t,(p-1)//r,p) 
+ 
+def solution(p,root,e):  
+    while True:
+        g=onemod(p,e) 
+        may=[] 
+        for i in tqdm(range(e)): 
+            may.append(root*pow(g,i,p)%p)
+        if len(may) == len(set(may)):
+            return may
+
+
+def solve_in_subset(ep,p):
+    cp = int(pow(c,inverse(int(e//ep),p-1),p))
+    com_factors = []
+    while GCD(ep,p-1) !=1:
+        com_factors.append(GCD(ep,p-1))
+        ep //= GCD(ep,p-1)
+    com_factors.sort()
+
+    cps = [cp]
+    for factor in com_factors:
+        mps = []
+        for cp in cps:
+            mp = AMM(cp, factor, p)
+            mps += solution(p,mp,factor)
+        cps = mps
+    for each in cps:
+        assert pow(each,e,p)==c%p
+    return cps
+
+e = 65537
+p= 12408795636519868275579286477747181009018504169827579387457997229774738126230652970860811085539129972962189443268046963335610845404214331426857155412988073
+q= 12190036856294802286447270376342375357864587534233715766210874702670724440751066267168907565322961270655972226761426182258587581206888580394726683112820379
+c= 68960610962019321576894097705679955071402844421318149418040507036722717269530195000135979777852568744281930839319120003106023209276898286482202725287026853925179071583797231099755287410760748104635674307266042492611618076506037004587354018148812584502385622631122387857218023049204722123597067641896169655595
+n = p*q
+
+m_p = solve_in_subset(1,p)
+m_q = solve_in_subset(e,q)
+
+for mpp in m_p:
+    for mqq in m_q: 
+        m = crt([int(mpp),int(mqq)],[p,q])
+        flag = long_to_bytes(m)
+        if b'ctf' in flag:
+            print(flag)
+            break 
+            
+# moectf{Oh~Now_Y0u_Kn0W_HoW_RsA_W0rkS!}

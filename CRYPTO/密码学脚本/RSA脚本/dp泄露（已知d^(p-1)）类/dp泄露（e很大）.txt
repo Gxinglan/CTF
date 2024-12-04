@@ -1,0 +1,21 @@
+#2、e较大
+import gmpy2
+from Crypto.Util.number import *
+
+def solve_dp_leak(e,dp,n,c):
+    p = gmpy2.gcd(pow(5,e*dp,n)-5,n)
+    q = n//p
+    phi = (p-1)*(q-1)
+    try:
+        d = gmpy2.invert(e,phi)
+        m = pow(c,d,n)
+        flag = long_to_bytes(m)
+        return flag
+    except:
+        pass
+
+n = 
+c = 
+dp = 
+flag = solve_dp_leak(e,dp,n,c)
+print(flag)

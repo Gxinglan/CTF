@@ -1,0 +1,23 @@
+#题目
+import gmpy2
+from Crypto.Util.number import *
+from enc import flag
+ 
+m = bytes_to_long(flag)
+n = getPrime(1024)
+x = getPrime(200)
+hint = (x*gmpy2.invert(m,n)) % n
+print(f'n = {n}')
+print(f'hint = {hint}')
+
+#脚本
+import gmpy2
+from Crypto.Util.number import *
+from enc import flag
+ 
+m = bytes_to_long(flag)
+n = getPrime(1024)
+x = getPrime(200)
+hint = (x*gmpy2.invert(m,n)) % n
+print(f'n = {n}')
+print(f'hint = {hint}')

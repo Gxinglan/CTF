@@ -1,0 +1,61 @@
+from Crypto.Util.number import *
+import sys
+
+pxorq = 5599968251197363876087002284371721787318931284225671549507477934076746561842
+n = 7120275986401660066259983193598830554385933355254283093021239164350142898387660104515624591378875067038235085428170557400012848874756868985306042421950909
+c = 6803450117490196163076010186755045681029929816618361161925865477601994608941714788803007124967390157378525581080320415602012078322064392991884070073083436
+e = 65537
+
+pxorq = str(bin(pxorq)[2:]).zfill(256)
+print(pxorq)
+
+def find(ph, qh, pl, ql):
+    l = len(ph)
+    tmp0 = ph + (256 - 2 * l) * "0" + pl
+    tmp1 = ph + (256 - 2 * l) * "1" + pl
+    tmq0 = qh + (256 - 2 * l) * "0" + ql
+    tmq1 = qh + (256 - 2 * l) * "1" + ql
+    if (int(tmp0, 2) * int(tmq0, 2) > n):
+        return
+    if (int(tmp1, 2) * int(tmq1, 2) < n):
+        return
+    if (l!=0 and int(pl, 2) * int(ql, 2) % (2 ** (l - 1)) != n % (2 ** (l - 1))):
+        return
+
+    if (l == 128):
+        pp0 = int(tmp0, 2)
+        if (n % pp0 == 0):
+            pf = pp0
+            qf = n // pp0
+            print(bin(pf)[2:])
+            print(bin(qf)[2:])
+            phi = (pf - 1) * (qf - 1)
+            d = inverse(e, phi)
+            m1 = pow(c, d, n)
+            print(long_to_bytes(m1))
+            exit()
+
+    else:
+        if (pxorq[l] == "1" and pxorq[255 - l] == "1"):
+            find(ph + "1", qh + "0", "1" + pl, "0" + ql)
+            find(ph + "0", qh + "0", "1" + pl, "1" + ql)
+            find(ph + "1", qh + "1", "0" + pl, "0" + ql)
+            find(ph + "0", qh + "1", "0" + pl, "1" + ql)
+        elif (pxorq[l] == "1" and pxorq[255 - l] == "0"):
+            find(ph + "1", qh + "0", "0" + pl, "0" + ql)
+            find(ph + "0", qh + "0", "0" + pl, "1" + ql)
+            find(ph + "1", qh + "1", "1" + pl, "0" + ql)
+            find(ph + "0", qh + "1", "1" + pl, "1" + ql)
+        elif (pxorq[l] == "0" and pxorq[255 - l] == "1"):
+            find(ph + "0", qh + "0", "1" + pl, "0" + ql)
+            find(ph + "0", qh + "1", "0" + pl, "0" + ql)
+            find(ph + "1", qh + "0", "1" + pl, "1" + ql)
+            find(ph + "1", qh + "1", "0" + pl, "1" + ql)
+        elif (pxorq[l] == "0" and pxorq[255 - l] == "0"):
+            find(ph + "0", qh + "0", "0" + pl, "0" + ql)
+            find(ph + "1", qh + "0", "0" + pl, "1" + ql)
+            find(ph + "0", qh + "1", "1" + pl, "0" + ql)
+            find(ph + "1", qh + "1", "1" + pl, "1" + ql)
+
+
+find("", "", "", "")
